@@ -1,3 +1,15 @@
+# Dab Mod for Majora's Mask in Zelda 64 Recompiled
+![Video_2025-02-01_00-56-11-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/aa4b4dfc-2bac-4203-b319-7832d52307b6)
+
+### Features:
+- DAB ON THEM HATERS by using the Blast Mask
+- EPIC SUNGLASSES that replace the Blast Mask's model
+
+### Notes:
+- You can only dab while standing still
+- Link is invulnerable while dabbing (the explosion won't damage him)
+- No 2D icon for the EPIC SUNGLASSES just yet
+
 # Majora's Mask: Recompiled Mod Template
 
 This is an example mod for Majora's Mask: Recompiled that can be used as a template for creating mods. It has a basic build system, headers, sample code, and a mod config toml.
