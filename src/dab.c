@@ -145,12 +145,12 @@ RECOMP_PATCH void Player_DrawBlastMask(PlayState* play, Player* player) {
             alpha = 255;
         }
 
-        gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, (u8)alpha);
-        gSPDisplayList(POLY_OPA_DISP++, sunglasses_sunglasses_mesh);
-        gSPSegment(POLY_OPA_DISP++, 0x09, D_801C0BD0);
-        gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, (u8)(255 - alpha));
+        gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, (u8)alpha);
+        gSPDisplayList(POLY_XLU_DISP++, sunglasses_sunglasses_mesh);
+        gSPSegment(POLY_XLU_DISP++, 0x09, D_801C0BD0);
+        gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, (u8)(255 - alpha));
     } else {
-        gSPSegment(POLY_OPA_DISP++, 0x09, D_801C0BC0);
+        gSPSegment(POLY_XLU_DISP++, 0x09, D_801C0BC0);
     }
 
     CLOSE_DISPS(play->state.gfxCtx);
