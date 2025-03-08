@@ -23,15 +23,6 @@ RECOMP_IMPORT("*", int recomp_printf(const char* fmt, ...));
 
 extern LinkAnimationHeader gLinkHumanSkelEpicdabAnim;
 
-RECOMP_PATCH void* Lib_SegmentedToVirtual(void* ptr) {
-    if (IS_KSEG0(ptr)) {
-        return ptr;
-    }
-    else {
-        return SEGMENTED_TO_K0(ptr);
-    }
-}
-
 RECOMP_PATCH void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimationHeader* animation, s32 frame, s32 limbCount,
                                       Vec3s* frameTable) {
     AnimTask* task = AnimTaskQueue_NewTask(&play->animTaskQueue, ANIMTASK_LOAD_PLAYER_FRAME);
@@ -60,7 +51,9 @@ RECOMP_PATCH void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimat
     }
 }
 
-/*RECOMP_PATCH PlayerAnimationHeader* Player_GetIdleAnim(Player* this) {
+// Debug feature to test the dab animation with L
+/*
+RECOMP_PATCH PlayerAnimationHeader* Player_GetIdleAnim(Player* this) {
     if ((this->transformation == PLAYER_FORM_ZORA) || (this->actor.id != ACTOR_PLAYER)) {
         return &gPlayerAnim_pz_wait;
     }
@@ -103,7 +96,7 @@ RECOMP_HOOK("Player_ProcessItemButtons") void on_Player_ProcessItemButtons(Playe
                 : i;
     if (Player_GetItemOnButton(play, this, i) == ITEM_F0) {
         if (this->blastMaskTimer == 0) {
-            this->invincibilityTimer = 127;
+            this->invincibilityTimer = 20;
             Player_SetAction_PreserveItemAction(play, this, Player_Action_Dab, 1);
         }
 
@@ -145,13 +138,12 @@ RECOMP_PATCH void Player_DrawBlastMask(PlayState* play, Player* player) {
             alpha = 255;
         }
 
-        gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, (u8)alpha);
-        gSPDisplayList(POLY_XLU_DISP++, sunglasses_sunglasses_mesh);
-        gSPSegment(POLY_XLU_DISP++, 0x09, D_801C0BD0);
-        gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, (u8)(255 - alpha));
+        gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, (u8)alpha);
+        gSPDisplayList(POLY_OPA_DISP++, sunglasses_sunglasses_mesh);
+        gSPSegment(POLY_OPA_DISP++, 0x09, D_801C0BD0);
+        gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, (u8)(255 - alpha));
     } else {
-        gSPSegment(POLY_XLU_DISP++, 0x09, D_801C0BC0);
+        gSPSegment(POLY_OPA_DISP++, 0x09, D_801C0BC0);
     }
-
     CLOSE_DISPS(play->state.gfxCtx);
 }
