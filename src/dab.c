@@ -86,7 +86,12 @@ void Player_Action_Dab(Player* this, PlayState* play) {
     //}
 }
 
+PlayState* sPlayState;
 
+RECOMP_CALLBACK("*", recomp_on_play_init)
+void OnPlayInit(PlayState* play) {
+    sPlayState = play;
+}
 
 RECOMP_HOOK("Player_ProcessItemButtons") void on_Player_ProcessItemButtons(Player* this, PlayState* play) {
     EquipSlot i = func_8082FDC4();
@@ -101,6 +106,17 @@ RECOMP_HOOK("Player_ProcessItemButtons") void on_Player_ProcessItemButtons(Playe
         }
 
     }
+}
+
+RECOMP_HOOK_RETURN("Player_ProcessItemButtons")
+void BlastMaskCooldown_Player_ProcessItemButtons() {
+    Player* player = GET_PLAYER(sPlayState);
+
+    if (player->blastMaskTimer != 310) {
+        return;
+    }
+
+    player->blastMaskTimer = 10;
 }
 
 extern Gfx* D_801C0B20[];
@@ -146,4 +162,55 @@ RECOMP_PATCH void Player_DrawBlastMask(PlayState* play, Player* player) {
         gSPSegment(POLY_OPA_DISP++, 0x09, D_801C0BC0);
     }
     CLOSE_DISPS(play->state.gfxCtx);
+}
+extern u64 dab_dabPromptSD_ia4[];
+
+u8 gBActionIsExplode = 0;
+PlayState* gPlayState;
+
+RECOMP_HOOK("Interface_SetBButtonPlayerDoAction") void on_Interface_SetBButtonPlayerDoAction(PlayState* play, s16 bButtonDoAction) {
+    if (bButtonDoAction == DO_ACTION_EXPLODE) {
+        gBActionIsExplode = 1;
+    } else {
+        gBActionIsExplode = 0;
+    }
+    gPlayState = play;
+}
+
+RECOMP_HOOK_RETURN("Interface_SetBButtonPlayerDoAction") void return_Interface_SetBButtonPlayerDoAction(PlayState* play, s16 bButtonDoAction) {
+    if (gBActionIsExplode) {
+        Lib_MemCpy(gPlayState->interfaceCtx.doActionSegment + DO_ACTION_OFFSET_B_INTERFACE, dab_dabPromptSD_ia4, DO_ACTION_TEX_SIZE);
+    }
+    gBActionIsExplode = 0;
+}
+
+extern u64 dab_shadesHD_rgba32[];
+u8 gCurMaskIsBlast = 0;
+PlayState* gPlayState2;
+u8 gId;
+void* gDst;
+u8 gAlreadyTranslated = 0;
+uintptr_t gTranslatedAddress;
+
+RECOMP_HOOK("CmpDma_LoadFileImpl") void on_CmpDma_LoadFileImpl(uintptr_t segmentRom, s32 id, void* dst, size_t size) {
+    if (!gAlreadyTranslated ) {
+        gTranslatedAddress = DmaMgr_TranslateVromToRom(SEGMENT_ROM_START(icon_item_static_yar));
+        gAlreadyTranslated = 1;
+    }
+    if (id == ITEM_MASK_BLAST && segmentRom == gTranslatedAddress) {
+        recomp_printf("Blast mask\n");
+        gCurMaskIsBlast = 1;
+    } else {
+        gCurMaskIsBlast = 0;
+        recomp_printf("Item: %d\n", id);
+    } 
+    gId = id;
+    gDst = dst;
+}
+
+RECOMP_HOOK_RETURN("CmpDma_LoadFileImpl") void return_CmpDma_LoadFileImpl(void) {
+    if (gCurMaskIsBlast) {
+        Lib_MemCpy(gDst, dab_shadesHD_rgba32, ICON_ITEM_TEX_SIZE);
+    }
+    gCurMaskIsBlast = 0;
 }
