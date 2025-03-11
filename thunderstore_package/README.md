@@ -1,6 +1,8 @@
 # Dab Mod for Majora's Mask in Zelda 64 Recompiled
 ![Video_2025-02-01_00-56-11-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/aa4b4dfc-2bac-4203-b319-7832d52307b6)
 
+Thanks to [Nerrel](https://www.youtube.com/c/nerrel) for the textures for the HUD!
+
 ### Features:
 - DAB ON THEM HATERS by using the Blast Mask
 

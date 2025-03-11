@@ -4,11 +4,11 @@
 ### Features:
 - DAB ON THEM HATERS by using the Blast Mask
 - EPIC SUNGLASSES that replace the Blast Mask's model
+- Thanks to [Nerrel](https://www.youtube.com/c/nerrel) for the textures for the HUD!
 
 ### Notes:
 - You can only dab while standing still
 - Link is invulnerable while dabbing (the explosion won't damage him)
-- No 2D icon for the EPIC SUNGLASSES just yet
 
 ### Building
 - First, you need to build [N64Recomp](https://github.com/N64Recomp/N64Recomp) for the RecompModTool utility.
