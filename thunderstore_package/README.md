@@ -14,4 +14,3 @@ Thanks to [Nerrel](https://www.youtube.com/c/nerrel) for the textures for the HU
 ### Notes:
 - You can only dab while standing still
 - Link is invulnerable while dabbing (the explosion won't damage him)
-- No 2D icon for the EPIC SUNGLASSES just yet

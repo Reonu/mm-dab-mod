@@ -1,3 +1,5 @@
+### 0.9.3
+- Fix unique mod ID
 ### 0.9.2
 - Added 2D art for the HUD by [Nerrel](https://www.youtube.com/c/nerrel)
 - Removed the cooldown when dabbing
