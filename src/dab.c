@@ -1,5 +1,6 @@
 #include "modding.h"
 #include "global.h"
+#include "eztr_api.h"
 
 extern Input* sPlayerControlInput;
 void Player_Action_18(Player* this, PlayState* play);
@@ -198,11 +199,11 @@ RECOMP_HOOK("CmpDma_LoadFileImpl") void on_CmpDma_LoadFileImpl(uintptr_t segment
         gAlreadyTranslated = 1;
     }
     if (id == ITEM_MASK_BLAST && segmentRom == gTranslatedAddress) {
-        recomp_printf("Blast mask\n");
+        //recomp_printf("Blast mask\n");
         gCurMaskIsBlast = 1;
     } else {
         gCurMaskIsBlast = 0;
-        recomp_printf("Item: %d\n", id);
+        //recomp_printf("Item: %d\n", id);
     } 
     gId = id;
     gDst = dst;
@@ -213,4 +214,81 @@ RECOMP_HOOK_RETURN("CmpDma_LoadFileImpl") void return_CmpDma_LoadFileImpl(void) 
         Lib_MemCpy(gDst, dab_shadesHD_rgba32, ICON_ITEM_TEX_SIZE);
     }
     gCurMaskIsBlast = 0;
+}
+
+Mtx sunglasses_scale_mtx;
+extern Gfx gGiBlastMaskDL[];
+u8 gIsBlastGIModel;
+DmaRequest* gReq;
+extern Gfx gi_sunglasses_gi_sunglasses_mesh[];
+
+Gfx scaled_sunglasses[] = {
+    gsSPMatrix(&sunglasses_scale_mtx, G_MTX_PUSH | G_MTX_MUL | G_MTX_MODELVIEW),
+    gsSPDisplayList(gi_sunglasses_gi_sunglasses_mesh),
+    gsSPPopMatrix(G_MTX_MODELVIEW),
+    gsSPEndDisplayList()
+};
+
+RECOMP_CALLBACK("*", recomp_on_init)
+void onInit(void) {
+    guScale(&sunglasses_scale_mtx, 0.1f, 0.1f, 0.1f);
+}
+
+
+
+RECOMP_HOOK("DmaMgr_ProcessRequest") void on_DmaMgrProcessRequest(DmaRequest* req) {
+    gReq = req;
+}
+
+extern u8 _object_gi_mask21SegmentRomStart[];
+RECOMP_HOOK_RETURN("DmaMgr_ProcessRequest") void return_DmaMgrProcessRequest(void) {
+    if (gReq->vromAddr == (uintptr_t)_object_gi_mask21SegmentRomStart) {
+        uintptr_t old_seg6 = gSegments[0x06];
+        gSegments[0x06] = K0_TO_PHYS(gReq->dramAddr);
+        Gfx* dl = (Gfx*)Lib_SegmentedToVirtual(gGiBlastMaskDL);
+        gSegments[0x06] = old_seg6;    
+        recomp_printf("dl at %08X\n", (u32)dl);
+        recomp_printf("dl: %08X %08X\n", dl->words.w0, dl->words.w1);
+        gSPBranchList(dl, scaled_sunglasses);
+    }
+}
+
+// text replacement
+EZTR_ON_INIT void replace_msgs() {
+    EZTR_Basic_ReplaceText(
+        0x008D,
+        EZTR_STANDARD_TEXT_BOX_I,
+        1,
+        EZTR_ICON_BLAST_MASK,
+        EZTR_NO_VALUE,
+        EZTR_NO_VALUE,
+        EZTR_NO_VALUE,
+        true,
+        "|17You got the |01Dab Sunglasses|00!|11These incredible sunglasses allow|11you to dab on your haters.|10Press |B1 to dab. Your haters|11will literally explode.|BF",
+        NULL
+    );
+    EZTR_Basic_ReplaceText(
+        0x2A35,
+        EZTR_STANDARD_TEXT_BOX_I,
+        0,
+        EZTR_ICON_NO_ICON,
+        EZTR_NO_VALUE,
+        EZTR_NO_VALUE,
+        EZTR_NO_VALUE,
+        true,
+       "|1Ei|0CYes, I must thank you. These are|11dangerous sunglasses, but maybe you|11could use them to deal with your|11haters.|E0|BF",
+        NULL
+    );
+    EZTR_Basic_ReplaceText(
+        0x1747,
+        EZTR_STANDARD_TEXT_BOX_I,
+        1,
+        EZTR_ICON_BLAST_MASK,
+        EZTR_NO_VALUE,
+        EZTR_NO_VALUE,
+        EZTR_NO_VALUE,
+        true,
+        "|01Dab Sunglasses|11|00Wear them with |B2, then |01dab|11|00it with |B1...|11|12Your haters will have no choice|11but to explode.|BF",
+        NULL
+    );
 }
