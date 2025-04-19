@@ -24,7 +24,8 @@ RECOMP_IMPORT("*", int recomp_printf(const char* fmt, ...));
 
 extern LinkAnimationHeader gLinkHumanSkelEpicdabAnim;
 
-RECOMP_PATCH void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimationHeader* animation, s32 frame, s32 limbCount,
+// No longer needed since this is a base recomp patch now
+/*RECOMP_PATCH void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimationHeader* animation, s32 frame, s32 limbCount,
                                       Vec3s* frameTable) {
     AnimTask* task = AnimTaskQueue_NewTask(&play->animTaskQueue, ANIMTASK_LOAD_PLAYER_FRAME);
 
@@ -50,7 +51,7 @@ RECOMP_PATCH void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimat
                 sizeof(Vec3s) * limbCount + sizeof(s16), 0, &task->data.loadPlayerFrame.msgQueue, NULL);
         }
     }
-}
+}*/
 
 // Debug feature to test the dab animation with L
 /*
@@ -79,12 +80,16 @@ extern s32 PlayerAnimation_Update(PlayState* play, SkelAnime* skelAnime);
 extern void Player_Action_Idle(Player* this, PlayState* play);
 extern void PlayerAnimation_AnimateFrame(PlayState* play, SkelAnime* skelAnime);
 extern void Player_SetAction_PreserveItemAction(PlayState* play, Player* this, PlayerActionFunc actionFunc, s32 arg3);
+// Custom dab action.
 void Player_Action_Dab(Player* this, PlayState* play) {
-    Player_Anim_PlayOnce(play, this, &gLinkHumanSkelEpicdabAnim); 
-    //s32 animFinished = PlayerAnimation_Update(play, &this->skelAnime);
-    //if (animFinished) {
+    s32 animFinished = PlayerAnimation_Update(play, &this->skelAnime);
+    this->speedXZ *= 0.8f;
+    if (this->speedXZ < 0) {
+        this->speedXZ = 0;
+    }
+    if (animFinished) {
         Player_SetAction(play, this, Player_Action_Idle,1);
-    //}
+    }
 }
 
 PlayState* sPlayState;
@@ -94,6 +99,7 @@ void OnPlayInit(PlayState* play) {
     sPlayState = play;
 }
 
+// Play the dab animation and switch to the custom dab action
 RECOMP_HOOK("Player_ProcessItemButtons") void on_Player_ProcessItemButtons(Player* this, PlayState* play) {
     EquipSlot i = func_8082FDC4();
         i = ((i >= EQUIP_SLOT_A) && (this->transformation == PLAYER_FORM_FIERCE_DEITY) &&
@@ -102,6 +108,7 @@ RECOMP_HOOK("Player_ProcessItemButtons") void on_Player_ProcessItemButtons(Playe
                 : i;
     if (Player_GetItemOnButton(play, this, i) == ITEM_F0) {
         if (this->blastMaskTimer == 0) {
+            Player_Anim_PlayOnce(play, this, &gLinkHumanSkelEpicdabAnim); 
             this->invincibilityTimer = 20;
             Player_SetAction_PreserveItemAction(play, this, Player_Action_Dab, 1);
         }
@@ -109,6 +116,7 @@ RECOMP_HOOK("Player_ProcessItemButtons") void on_Player_ProcessItemButtons(Playe
     }
 }
 
+// Change the Blast Mask cooldown.
 RECOMP_HOOK_RETURN("Player_ProcessItemButtons")
 void BlastMaskCooldown_Player_ProcessItemButtons() {
     Player* player = GET_PLAYER(sPlayState);
@@ -129,6 +137,7 @@ RECOMP_HOOK("Player_Init") void on_Player_Init() {
 extern u32 gSegments[NUM_SEGMENTS];
 extern void AnimatedMat_DrawOpa(PlayState* play, AnimatedMaterial* matAnim);
 
+// Replace the Blast Mask's model on Link's face.
 RECOMP_PATCH void Player_DrawBlastMask(PlayState* play, Player* player) {
     static Gfx D_801C0BC0[] = {
         gsDPSetEnvColor(0, 0, 0, 255),
@@ -169,6 +178,7 @@ extern u64 dab_dabPromptSD_ia4[];
 u8 gBActionIsExplode = 0;
 PlayState* gPlayState;
 
+// Check if the current B button prompt is "Explode"
 RECOMP_HOOK("Interface_SetBButtonPlayerDoAction") void on_Interface_SetBButtonPlayerDoAction(PlayState* play, s16 bButtonDoAction) {
     if (bButtonDoAction == DO_ACTION_EXPLODE) {
         gBActionIsExplode = 1;
@@ -178,6 +188,7 @@ RECOMP_HOOK("Interface_SetBButtonPlayerDoAction") void on_Interface_SetBButtonPl
     gPlayState = play;
 }
 
+// Replace the B button prompt to say "Dab" instead of "Explode".
 RECOMP_HOOK_RETURN("Interface_SetBButtonPlayerDoAction") void return_Interface_SetBButtonPlayerDoAction(PlayState* play, s16 bButtonDoAction) {
     if (gBActionIsExplode) {
         Lib_MemCpy(gPlayState->interfaceCtx.doActionSegment + DO_ACTION_OFFSET_B_INTERFACE, dab_dabPromptSD_ia4, DO_ACTION_TEX_SIZE);
@@ -193,22 +204,22 @@ void* gDst;
 u8 gAlreadyTranslated = 0;
 uintptr_t gTranslatedAddress;
 
+// Translate the address only once, and check if it's currently rendering the Blast Mask icon in the UI. 
 RECOMP_HOOK("CmpDma_LoadFileImpl") void on_CmpDma_LoadFileImpl(uintptr_t segmentRom, s32 id, void* dst, size_t size) {
     if (!gAlreadyTranslated ) {
         gTranslatedAddress = DmaMgr_TranslateVromToRom(SEGMENT_ROM_START(icon_item_static_yar));
         gAlreadyTranslated = 1;
     }
     if (id == ITEM_MASK_BLAST && segmentRom == gTranslatedAddress) {
-        //recomp_printf("Blast mask\n");
         gCurMaskIsBlast = 1;
     } else {
         gCurMaskIsBlast = 0;
-        //recomp_printf("Item: %d\n", id);
     } 
     gId = id;
     gDst = dst;
 }
 
+// Replace the Blast Mask icon in the UI with the shades.
 RECOMP_HOOK_RETURN("CmpDma_LoadFileImpl") void return_CmpDma_LoadFileImpl(void) {
     if (gCurMaskIsBlast) {
         Lib_MemCpy(gDst, dab_shadesHD_rgba32, ICON_ITEM_TEX_SIZE);
@@ -222,6 +233,7 @@ u8 gIsBlastGIModel;
 DmaRequest* gReq;
 extern Gfx gi_sunglasses_gi_sunglasses_mesh[];
 
+// Scale the GI model down. GI models are tiny in vanilla, so this is needed to achieve the vertex precision the model requires. 
 Gfx scaled_sunglasses[] = {
     gsSPMatrix(&sunglasses_scale_mtx, G_MTX_PUSH | G_MTX_MUL | G_MTX_MODELVIEW),
     gsSPDisplayList(gi_sunglasses_gi_sunglasses_mesh),
@@ -241,17 +253,24 @@ RECOMP_HOOK("DmaMgr_ProcessRequest") void on_DmaMgrProcessRequest(DmaRequest* re
 }
 
 extern u8 _object_gi_mask21SegmentRomStart[];
+// Replace the Blast Mask's GI model. This method ensures it doesn't break compatibility with mods that use a custom GI model table, such as rando.
 RECOMP_HOOK_RETURN("DmaMgr_ProcessRequest") void return_DmaMgrProcessRequest(void) {
     if (gReq->vromAddr == (uintptr_t)_object_gi_mask21SegmentRomStart) {
         uintptr_t old_seg6 = gSegments[0x06];
         gSegments[0x06] = K0_TO_PHYS(gReq->dramAddr);
         Gfx* dl = (Gfx*)Lib_SegmentedToVirtual(gGiBlastMaskDL);
         gSegments[0x06] = old_seg6;    
-        recomp_printf("dl at %08X\n", (u32)dl);
-        recomp_printf("dl: %08X %08X\n", dl->words.w0, dl->words.w1);
         gSPBranchList(dl, scaled_sunglasses);
     }
 }
+
+extern FlexSkeletonHeader gBombShopLadySkel;
+extern FlexSkeletonHeader epic_grandma;
+// Replace the Bomb Shop Lady's model
+RECOMP_HOOK("EnBaba_Init") void on_EnBaba_Init(Actor* thix, PlayState* play) {
+    *(FlexSkeletonHeader*)Lib_SegmentedToVirtual(&gBombShopLadySkel) = epic_grandma;
+}
+
 
 // text replacement
 EZTR_ON_INIT void replace_msgs() {
@@ -264,7 +283,7 @@ EZTR_ON_INIT void replace_msgs() {
         EZTR_NO_VALUE,
         EZTR_NO_VALUE,
         true,
-        "|17You got the |01Dab Sunglasses|00!|11These incredible sunglasses allow|11you to dab on your haters.|10Press |B1 to dab. Your haters|11will literally explode.|BF",
+        "|17You got the |01Dab Shades|00!|18|11These incredible shades allow|11you to dab on your haters.|10Press |B1 to dab. Your haters|11will literally explode.|BF",
         NULL
     );
     EZTR_Basic_ReplaceText(
@@ -276,7 +295,7 @@ EZTR_ON_INIT void replace_msgs() {
         EZTR_NO_VALUE,
         EZTR_NO_VALUE,
         true,
-       "|1Ei|0CYes, I must thank you. These are|11dangerous sunglasses, but maybe you|11could use them to deal with your|11haters.|E0|BF",
+       "|1Ei|0CYes, I must thank you. These sick|11shades'll totally 'splode your haters,|11dawg... Here's an extra pair,|11dear.|E0|BF",
         NULL
     );
     EZTR_Basic_ReplaceText(
@@ -288,7 +307,7 @@ EZTR_ON_INIT void replace_msgs() {
         EZTR_NO_VALUE,
         EZTR_NO_VALUE,
         true,
-        "|01Dab Sunglasses|11|00Wear them with |B2, then |01dab|11|00it with |B1...|11|12Your haters will have no choice|11but to explode.|BF",
+        "|01Dab Shades|11|00Wear them with |B2, then |01dab|11|00with |B1...|11|12Your haters will have no choice|11but to explode.|BF",
         NULL
     );
 }
