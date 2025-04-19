@@ -1,3 +1,5 @@
+### 1.0.1
+- Added missing Nerrel credit to the mod description
 ### 1.0.0
 - You can now dab while moving. Link will slide and come to a stop.
 - Changed the Get Item model for the Blast Mask, showing the shades.

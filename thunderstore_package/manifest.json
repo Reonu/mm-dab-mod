@@ -1,6 +1,6 @@
 {
     "name": "Dab_Mod",
-    "version_number": "1.0.0",
+    "version_number": "1.0.1",
     "website_url": "https://github.com/Reonu/mm-dab-mod",
     "description": "Link dabs when using the Blast Mask, which is replaced with a pair of sunglasses.",
     "dependencies": [
