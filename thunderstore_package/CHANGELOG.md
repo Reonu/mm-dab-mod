@@ -1,3 +1,9 @@
+### 1.0.0
+- You can now dab while moving. Link will slide and come to a stop.
+- Changed the Get Item model for the Blast Mask, showing the shades.
+- Changed the Bomb Shop Lady text to reference the shades.
+- Gave the Bomb Shop Lady her own sick shades.
+- Updated to work on the latest development version of Zelda 64 Recompiled.
 ### 0.9.3
 - Fix unique mod ID
 ### 0.9.2
