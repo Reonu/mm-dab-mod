@@ -80,6 +80,7 @@ extern s32 PlayerAnimation_Update(PlayState* play, SkelAnime* skelAnime);
 extern void Player_Action_Idle(Player* this, PlayState* play);
 extern void PlayerAnimation_AnimateFrame(PlayState* play, SkelAnime* skelAnime);
 extern void Player_SetAction_PreserveItemAction(PlayState* play, Player* this, PlayerActionFunc actionFunc, s32 arg3);
+
 // Custom dab action.
 void Player_Action_Dab(Player* this, PlayState* play) {
     s32 animFinished = PlayerAnimation_Update(play, &this->skelAnime);
@@ -87,9 +88,11 @@ void Player_Action_Dab(Player* this, PlayState* play) {
     if (this->speedXZ < 0) {
         this->speedXZ = 0;
     }
-    if (animFinished) {
-        Player_SetAction(play, this, Player_Action_Idle,1);
+
+    if (animFinished || CHECK_BTN_ALL(sPlayerControlInput->press.button, BTN_B)) {
+        Player_SetAction(play, this, Player_Action_Idle, 1);
     }
+
 }
 
 PlayState* sPlayState;
@@ -243,7 +246,7 @@ Gfx scaled_sunglasses[] = {
 
 RECOMP_CALLBACK("*", recomp_on_init)
 void onInit(void) {
-    guScale(&sunglasses_scale_mtx, 0.1f, 0.1f, 0.1f);
+    guScale(&sunglasses_scale_mtx, 0.01f, 0.01f, 0.01f);
 }
 
 
