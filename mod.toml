@@ -8,7 +8,7 @@
 id = "mm_reonu_dab_mod"
 
 # Version of this mod.
-version = "1.0.1"
+version = "1.0.3"
 
 # The name that will show up for this mod in the mod menu. This should be human readable.
 display_name = "Dab Mod"
@@ -18,7 +18,9 @@ description =  """
 Link dabs when using the Blast Mask, which is replaced by a pair of shades.
 His haters will explode.
 
-Thanks to Nerrel for the HUD textures."""
+Thanks to Nerrel for the HUD textures.
+
+Note for speedrunners: Pressing B-mid dab will allow you to perform other actions afterwards, which allows you to still perform a blast mask hover."""
 
 # A short description that will show up in this mod's entry in the mod list. This should be human readable and kept short
 # to prevent it from being cut off due to the limited space.

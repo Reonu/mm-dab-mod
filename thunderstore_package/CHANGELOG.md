@@ -1,3 +1,8 @@
+### 1.0.3
+- You can now cancel the dab action mid-dab with B, which allows performing a "blast mask" hover.
+- Better GI model
+### 1.0.2
+- Actually upload the right version of the mod this time
 ### 1.0.1
 - Added missing Nerrel credit to the mod description
 ### 1.0.0

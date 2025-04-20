@@ -5,6 +5,8 @@ THIS MOD REQUIRES [EZ Text Replacer API](https://thunderstore.io/c/zelda-64-reco
 
 Thanks to [Nerrel](https://www.youtube.com/c/nerrel) for the textures for the HUD!
 
+Note for speedrunners: Pressing B-mid dab will allow you to perform other actions afterwards, which allows you to still perform a blast mask hover.
+
 ### Features:
 - DAB ON THEM HATERS by using the Blast Mask
 
